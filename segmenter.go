@@ -116,7 +116,7 @@ func (seg *Segmenter) LoadDictionary(files string) {
 		iSegmentsToAdd := 0
 		for iToken := 0; iToken < len(segments); iToken++ {
 			if len(segments[iToken].token.text) > 1 {
-				token.segments[iSegmentsToAdd] = &segments[iSegmentsToAdd]
+				token.segments[iSegmentsToAdd] = &segments[iToken]
 				iSegmentsToAdd++
 			}
 		}
@@ -245,9 +245,8 @@ func maxInt(a, b int) int {
 
 // 将文本划分成字元
 func splitTextToWords(text Text) []Text {
-	output := make([]Text, len(text))
+	output := make([]Text, 0, len(text)/8)
 	current := 0
-	currentWord := 0
 	inAlphanumeric := true
 	alphanumericStart := 0
 	for current < len(text) {
@@ -262,12 +261,10 @@ func splitTextToWords(text Text) []Text {
 			if inAlphanumeric {
 				inAlphanumeric = false
 				if current != 0 {
-					output[currentWord] = toLower(text[alphanumericStart:current])
-					currentWord++
+					output = append(output, toLower(text[alphanumericStart:current]))
 				}
 			}
-			output[currentWord] = text[current : current+size]
-			currentWord++
+			output = append(output, text[current:current+size])
 		}
 		current += size
 	}
@@ -275,12 +272,11 @@ func splitTextToWords(text Text) []Text {
 	// 处理最后一个字元是英文的情况
 	if inAlphanumeric {
 		if current != 0 {
-			output[currentWord] = toLower(text[alphanumericStart:current])
-			currentWord++
+			output = append(output, toLower(text[alphanumericStart:current]))
 		}
 	}
 
-	return output[:currentWord]
+	return output
 }
 
 // 将英文词转化为小写
